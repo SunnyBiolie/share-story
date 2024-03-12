@@ -2,6 +2,7 @@ import { useSubmit } from "@remix-run/react";
 import { Button } from "../ui/button";
 import { DataType } from "~/types/types";
 import { useNotification } from "~/hooks/use-notification";
+import { useState } from "react";
 
 interface ActionGroupProps {
   data: DataType;
@@ -20,6 +21,8 @@ const ActionGroup = ({
   postId,
   previewSectionRef,
 }: ActionGroupProps) => {
+  const [isOpenDeleteForm, setIsOpenDeleteForm] = useState<boolean>(false);
+
   const notificationModalState = useNotification();
 
   const onPreview = () => {
@@ -127,10 +130,39 @@ const ActionGroup = ({
                   variant="destructive"
                   size="sm"
                   className="w-[72px]"
-                  onClick={onDelete}
+                  onClick={() => setIsOpenDeleteForm(true)}
                 >
                   Delete
                 </Button>
+                {isOpenDeleteForm && (
+                  <>
+                    <div className="fixed top-20 left-1/2 -translate-x-1/2 rounded-md p-6 bg-neutral-200 dark:bg-neutral-900 z-50">
+                      <div className="mb-4">
+                        This action cannot be undone, please make sure you want
+                        to delete this post.
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="w-[72px]"
+                          onClick={onDelete}
+                        >
+                          Delete
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-[72px]"
+                          onClick={() => setIsOpenDeleteForm(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="fixed top-0 left-0 bottom-0 right-0 bg-stone-950/60 z-[49]"></div>
+                  </>
+                )}
               </>
             )}
           </>

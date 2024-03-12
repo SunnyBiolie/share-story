@@ -56,6 +56,12 @@ export async function action({ request }: ActionFunctionArgs) {
           postData: data,
         });
       } else {
+        if (
+          objData.blockContent.length === 1 &&
+          objData.blockContent[0].type === "blank"
+        ) {
+          return null;
+        }
         const insertEditingPost = await createRecord("posts", {
           postData: data,
           cookieId: cookie.id,

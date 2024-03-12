@@ -42,20 +42,28 @@ const EditorBlock = ({ inAction, initialData, postId }: EditorBlockProps) => {
   const submit = useSubmit();
 
   useEffect(() => {
-    window.onkeydown = (e) => {
-      if (e.code === "KeyZ") {
-        e.preventDefault();
-        console.log(data);
-      }
-    };
-    if (inAction === "write") {
-      window.onbeforeunload = () => {
+    // window.onkeydown = (e) => {
+    //   if (e.code === "KeyZ") {
+    //     e.preventDefault();
+    //     console.log(data);
+    //   }
+    // };
+
+    const saveDraftData = () => {
+      if (inAction === "write") {
+        console.log("Save draft data");
         submit(
           { editingId: JSON.stringify(data) },
           { action: "/action/save-draft", method: "POST", navigate: false }
         );
-      };
-    }
+      }
+    };
+
+    window.addEventListener("beforeunload", saveDraftData);
+
+    return () => {
+      window.removeEventListener("beforeunload", saveDraftData);
+    };
   });
 
   const navigation = useNavigation();
