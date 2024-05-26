@@ -1,6 +1,5 @@
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
-import { query } from "thin-backend";
 import { DataType } from "~/types/types";
 import TextItem from "../../components/static-items/text-item";
 import CheckboxItem from "../../components/static-items/checkbox-item";
@@ -8,6 +7,7 @@ import ImageItem from "../../components/static-items/image-item";
 import { checkCookie, isUUID } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import PageLoading from "~/components/page-loading";
+import { db } from "~/lib/prisma";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!isUUID(params.id!)) {
@@ -16,9 +16,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       statusText: "Not Found",
     });
   }
-  const post = await query("posts").where("id", params.id!).fetchOne();
-  const { cookie } = await checkCookie(request);
 
+  const post = await db.posts.findUnique({ where: { id: params.id } });
   if (!post) {
     throw new Response(null, {
       status: 404,
@@ -26,11 +25,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     });
   }
 
+  const { cookie } = await checkCookie(request);
   const isOwner: boolean = post.cookieId === cookie.id ? true : false;
 
-  const belongToDraft = await query("cookie_users")
-    .where("editingId", post.id)
-    .fetchOne();
+  const belongToDraft = await db.cookieUsers.findUnique({
+    where: {
+      editingId: post.id,
+    },
+  });
 
   if (belongToDraft) {
     throw new Response(null, {
@@ -44,7 +46,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 const PublishedPage = () => {
   const { isOwner, postId, postData } = useLoaderData<typeof loader>();
-  const data: DataType = JSON.parse(postData);
+  const data: DataType = JSON.parse(postData as string);
 
   const submit = useSubmit();
 

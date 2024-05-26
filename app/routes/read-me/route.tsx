@@ -117,7 +117,7 @@ const ReadMe = () => {
           </p>
           <p className="indent-4">
             {
-              "Another thing to note is that remember to save your published link wherever you want, then you can share it with the world. In the next version maybe I will save it to your local storage or I can try coding another small app to do this."
+              "Another thing to note is that remember to save your published link wherever you want, then you can share it with the world. In the next version maybe I will save it to your local storage or try to coding something like that."
             }
           </p>
         </div>

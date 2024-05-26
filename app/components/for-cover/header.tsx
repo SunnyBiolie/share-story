@@ -1,4 +1,5 @@
 import { ModeToggle } from "~/components/mode-toggle";
+import { Button } from "../ui/button";
 
 const Header = () => {
   return (
@@ -9,7 +10,17 @@ const Header = () => {
           Beta
         </div>
       </div>
-      <ModeToggle />
+      <div className="flex items-center">
+        <Button size="sm" variant="link" asChild>
+          <a
+            href="/published/55797c24-5ca1-4a41-9781-d658403a05a3"
+            className="text-red-400"
+          >
+            Announcement
+          </a>
+        </Button>
+        <ModeToggle />
+      </div>
     </header>
   );
 };

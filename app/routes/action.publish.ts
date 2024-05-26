@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import { createRecord, query, updateRecord } from "thin-backend";
+import { db } from "~/lib/prisma";
 import { checkCookie } from "~/lib/utils";
 import { cookieUserId } from "~/server/cookie.server";
 
@@ -10,44 +10,70 @@ export async function action({ request }: ActionFunctionArgs) {
   const { hasCookieInBrowser, cookie } = await checkCookie(request);
 
   if (!hasCookieInBrowser) {
-    const insertCookieUser = await createRecord("cookie_users", {
-      id: cookie.id,
+    // Tạo người dùng mới nếu cookie không có thông tin
+    const insertCookieUser = await db.cookieUsers.create({
+      data: {
+        id: cookie.id,
+      },
     });
-    const insertPost = await createRecord("posts", {
-      postData: data,
-      cookieId: insertCookieUser.id,
+
+    // Tạo bài viết mới cho người dùng vừa tạo
+    const insertPost = await db.posts.create({
+      data: {
+        postData: data,
+        cookieId: insertCookieUser.id,
+      },
     });
 
     return redirect(`/published/${insertPost.id}`);
   }
 
-  const cookieUser = await query("cookie_users")
-    .where("id", cookie.id)
-    .fetchOne();
+  // Tìm người dùng từ thông tin cookie
+  const cookieUser = await db.cookieUsers.findUnique({
+    where: { id: cookie.id },
+  });
 
   if (!cookieUser) {
-    const insertCookieUser = await createRecord("cookie_users", {
-      id: cookie.id,
+    // Tạo người dùng mới nếu CSDL không tồn tại khớp với cookie
+    const insertCookieUser = await db.cookieUsers.create({
+      data: {
+        id: cookie.id,
+      },
     });
-    const insertPost = await createRecord("posts", {
-      postData: data,
-      cookieId: insertCookieUser.id,
+    const insertPost = await db.posts.create({
+      data: {
+        postData: data,
+        cookieId: insertCookieUser.id,
+      },
     });
 
     return redirect(`/published/${insertPost.id}`);
   }
 
   if (cookieUser.editingId) {
-    const publishPost = await updateRecord("posts", cookieUser.editingId, {
-      postData: data,
+    // Cập nhật nội dung bài viết chưa được publish của người dùng
+    const publishPost = await db.posts.update({
+      where: {
+        id: cookieUser.editingId,
+      },
+      data: {
+        postData: data,
+      },
     });
-    await updateRecord("cookie_users", cookie.id, { editingId: null });
+    // Đánh dấu người dùng không còn bài viết nào chưa publish
+    await db.cookieUsers.update({
+      where: { id: cookie.id },
+      data: { editingId: null },
+    });
 
     return redirect(`/published/${publishPost.id}`);
   } else {
-    const insertPost = await createRecord("posts", {
-      postData: data,
-      cookieId: cookie.id,
+    // Nếu có người dùng và người dùng không có bài viết chưa publish
+    const insertPost = await db.posts.create({
+      data: {
+        postData: data,
+        cookieId: cookie.id,
+      },
     });
 
     return redirect(`/published/${insertPost.id}`, {

@@ -26,7 +26,6 @@ import {
 } from "remix-themes";
 
 import { themeSessionResolver } from "~/server/sessions.server";
-import { initThinBackend } from "thin-backend";
 
 import styles from "./tailwind.css";
 import { checkCookie } from "./lib/utils";
@@ -47,10 +46,6 @@ export const links: LinksFunction = () => [
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  initThinBackend({
-    host: `https://${process.env.BACKEND_URL!}`,
-  });
-
   const { getTheme } = await themeSessionResolver(request);
   const { cookie } = await checkCookie(request);
 

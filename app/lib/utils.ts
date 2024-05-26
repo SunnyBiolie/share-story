@@ -34,14 +34,14 @@ export const isValidUrl = (url: string) => {
   }
 };
 
+// Kiểm tra xem trên trình duyệt có cookie chưa, nếu có trả về true và cookie đó, nếu chưa có trả về false và tạo ra và trả về một dữ liệu cookie mới
 export const checkCookie = async (request: Request) => {
   const cookieHeader = request.headers.get("Cookie");
   let cookie = await cookieUserId.parse(cookieHeader);
-  if (!cookie) {
+  if (!cookie || !isUUID(cookie.id)) {
     cookie = {
       id: guidGenerator(),
     };
-
     return {
       hasCookieInBrowser: false,
       cookie,
@@ -55,7 +55,7 @@ export const checkCookie = async (request: Request) => {
 };
 
 export const isUUID = (s: string) => {
-  return s.match(
-    "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-  );
+  const uuidRegex =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  return uuidRegex.test(s);
 };

@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import { query, updateRecord } from "thin-backend";
+import { db } from "~/lib/prisma";
 import { checkCookie } from "~/lib/utils";
 import { cookieUserId } from "~/server/cookie.server";
 
@@ -16,14 +16,21 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  const post = await query("posts").where("id", postId).fetchOne();
+  const post = await db.posts.findUnique({ where: { id: postId } });
 
-  if (post.cookieId !== cookie.id) {
+  if (post?.cookieId !== cookie.id) {
     throw new Error("You can't edit this post, you aren't the author!");
   }
 
   // When no error is returned
-  const updatedPost = await updateRecord("posts", postId, { postData: data });
+  const updatedPost = await db.posts.update({
+    where: {
+      id: postId,
+    },
+    data: {
+      postData: data,
+    },
+  });
 
   return redirect(`/published/${updatedPost.id}`, {
     headers: {

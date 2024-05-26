@@ -13,12 +13,13 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { Suspense, useEffect } from "react";
-import { query } from "thin-backend";
 import EditorBlock from "~/components/containers/editor-block";
 import PageLoading from "~/components/page-loading";
+import { db } from "~/lib/prisma";
 import { isUUID } from "~/lib/utils";
 
 export async function action({ request }: ActionFunctionArgs) {
+  // Đảm bảo rằng chỉ hiển thị nội dung khi người dùng truy cập từ trang published
   const formData = await request.formData();
   if (formData.get("postId")) {
     const data = formData.get("postId") as string;
@@ -37,7 +38,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
       statusText: "Not Found",
     });
   }
-  const post = query("posts").where("id", params.id!).fetchOne();
+  const post = await db.posts.findUnique({ where: { id: params.id! } });
+
+  if (!post) {
+    throw new Response(null, {
+      status: 404,
+      statusText: "Not Found",
+    });
+  }
 
   return defer({ postPromise: post });
 }
@@ -48,7 +56,6 @@ export default function EditPage() {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = "All your changes will not be saved!";
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -80,7 +87,7 @@ export default function EditPage() {
         {(post) => (
           <EditorBlock
             inAction="edit"
-            initialData={JSON.parse(post.postData)}
+            initialData={JSON.parse(post.postData as string)}
             postId={post.id}
           />
         )}

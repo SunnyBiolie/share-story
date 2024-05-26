@@ -50,8 +50,10 @@ const EditorBlock = ({ inAction, initialData, postId }: EditorBlockProps) => {
     // };
 
     const saveDraftData = () => {
+      // Chỉ thực hiện ở trang write, không thực hiện khi ở trang edit
       if (inAction === "write") {
         console.log("Save draft data");
+        // e.preventDefault();
         submit(
           { editingId: JSON.stringify(data) },
           { action: "/action/save-draft", method: "POST", navigate: false }
