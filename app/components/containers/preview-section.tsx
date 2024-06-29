@@ -31,7 +31,7 @@ const PreviewSection = forwardRef(function PreviewSection(
           }
         })}
       </div>
-      <div className="fixed top-0 left-0 size-full bg-red-400 z-[60]"></div>
+      {/* <div className="fixed top-0 left-0 size-full bg-red-400 z-[60]"></div> */}
     </>
   );
 });
